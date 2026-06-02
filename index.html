@@ -400,15 +400,12 @@ function renderNav(){
     if(route.page==='branch'){const b=state.branches.find(x=>x.id===route.branchId);if(b)h+=`<button class="active">📂 ${esc(b.name)}</button>`;}
     h+=`<button class="${route.page==='messages'?'active':''}" onclick="go('messages')">📨 الرسائل${msgBadge()}</button>`;
     h+=`<button class="${route.page==='numbers'?'active':''}" onclick="go('numbers')">🔢 الأرقام</button>`;
-    h+=`<button class="${route.page==='engine'?'active':''}" onclick="go('engine')">🎯 المحرّك</button>`;
-    h+=`<button class="${route.page==='rescue'?'active':''}" onclick="go('rescue')">🚑 الإنقاذ</button>`;
-    h+=`<button class="${route.page==='campaigns'?'active':''}" onclick="go('campaigns')">📣 الحملات</button>`;
     h+=`<button class="${route.page==='manage'?'active':''}" onclick="go('manage')">⚙️ الإدارة</button>`;
     nav.innerHTML=h;
   }else if(session.role==='manager'){
     nav.innerHTML=`<button class="${route.page==='branch'?'active':''}" onclick="go('branch','${session.branchId}')">📂 فرعي</button>
       <button class="${route.page==='engine'?'active':''}" onclick="go('engine')">🎯 المحرّك</button>
-      <button class="${route.page==='campaigns'?'active':''}" onclick="go('campaigns')">📣 الحملات</button>
+      <button class="${route.page==='rescue'?'active':''}" onclick="go('rescue')">🚑 الإنقاذ</button>
       <button class="${route.page==='messages'?'active':''}" onclick="go('messages')">📨 الرسائل${msgBadge()}</button>`;
   }else{
     nav.innerHTML=`<button class="${route.page==='myday'?'active':''}" onclick="go('myday')">📝 إدخال اليوم</button>
@@ -416,6 +413,7 @@ function renderNav(){
       <button class="${route.page==='mystats'?'active':''}" onclick="go('mystats')">📈 أدائي</button>
       <button class="${route.page==='mybranch'?'active':''}" onclick="go('mybranch')">🏢 فرعي</button>
       <button class="${route.page==='myengine'?'active':''}" onclick="go('myengine')">🎯 خطتي</button>
+      <button class="${route.page==='rescue'?'active':''}" onclick="go('rescue')">🚑 الإنقاذ</button>
       <button class="${route.page==='messages'?'active':''}" onclick="go('messages')">📨 الرسائل${msgBadge()}</button>`;
   }
 }
@@ -661,7 +659,7 @@ function renderMyStats(){
     <div class="card"><div class="muted">الزيارات</div><div class="big" style="font-size:22px">${fmt(act.visits)}</div></div>
     <div class="card"><div class="muted">المكالمات</div><div class="big" style="font-size:22px">${fmt(act.calls)}</div></div>
     <div class="card"><div class="muted">قيد المتابعة</div><div class="big" style="font-size:22px;color:var(--warn)">${pend}</div></div></div>`;
-  document.getElementById('view').innerHTML=h;
+  h+=engineHTML();document.getElementById('view').innerHTML=h;
 }
 function renderMyBranch(){
   const {b,e}=myEmp();if(!b){logout();return;}
@@ -980,7 +978,8 @@ function nextStepCards(actuals,targets,limit){
     <div class="muted" style="margin:4px 0">الإنجاز الحالي ${x.pc.toFixed(0)}% من مستهدف ${periodLabel()}</div>
     <div>👈 ${NEXT_STEP[x.p.key]}</div></div>`).join('');
 }
-function renderEngine(){
+function renderEngine(){document.getElementById('view').innerHTML=engineHTML();}
+function engineHTML(){
   let h=`<div class="card" style="margin-bottom:14px"><h2 style="margin:0 0 4px">🎯 محرّك الإنجاز</h2>
     <div class="muted">الفجوة عن المستهدف + الخطوة التالية + توقّع الإغلاق لكل فرع</div>
     <div style="margin-top:8px">الفترة: ${periodCtl()}</div></div>`;
@@ -999,7 +998,7 @@ function renderEngine(){
       <h3 style="margin:0">🏢 ${esc(b.name)}</h3>
       <div>${pillFor(g.score)} <span class="pill" style="background:${scoreColor(pj)}22;color:${scoreColor(pj)}">متوقّع ${pj.toFixed(0)}%</span></div></div>
       <div style="margin-top:10px">${nextStepCards(g.a,g.t,2)}</div></div>`;});
-  document.getElementById('view').innerHTML=h;
+  return h;
 }
 /* ----- إنذار مبكر + خطة إنقاذ 7 أيام ----- */
 function rescuePlan(actuals,targets){
@@ -1042,7 +1041,7 @@ function renderMyEngine(){
   h+=`</div>`;
   h+=`<div class="card" style="margin-bottom:14px"><h3>🚀 خطواتي التالية</h3>${nextStepCards(a,t,4)}</div>`;
   if(pj<50)h+=`<div class="card" style="border-inline-start:4px solid var(--bad)"><h3>🚑 خطة إنقاذ 7 أيام</h3>${rescuePlan(a,t)}</div>`;
-  document.getElementById('view').innerHTML=h;
+  h+=campaignsHTML();document.getElementById('view').innerHTML=h;
 }
 /* ===================== 🏆 سباق الفروع ===================== */
 function badgesFor(g){const b=[];const pc=k=>g.t[k]>0?g.a[k]/g.t[k]*100:0;
@@ -1089,7 +1088,8 @@ const CAMPAIGNS=[
  {months:[10,11],title:'موسم نهاية العام والشهادات',product:'liabilities_cert',action:'استثمر مكافآت نهاية العام في شهادات بعائد مرتفع وأصحاب المعاشات.'},
  {months:[0,1,2,3,4,5,6,7,8,9,10,11],title:'حملة دائمة: التأمين البنكي مع كل قرض',product:'bank_insurance',action:'اربط وثيقة تأمين بكل قرض جديد طوال العام.'}
 ];
-function renderCampaigns(){
+function renderCampaigns(){document.getElementById('view').innerHTML=campaignsHTML();}
+function campaignsHTML(){
   const m=new Date().getMonth();const pl=k=>(PRODUCTS.find(p=>p.key===k)||{}).label||k;
   const active=CAMPAIGNS.filter(c=>c.months.includes(m));
   const upcoming=CAMPAIGNS.filter(c=>!c.months.includes(m)&&c.months.includes((m+1)%12));
@@ -1106,7 +1106,7 @@ function renderCampaigns(){
     upcoming.forEach(c=>{h+=`<div class="card" style="margin-bottom:10px">
       <div style="font-weight:800">${c.title}</div><div class="muted">المنتج: ${pl(c.product)}</div><div>${c.action}</div></div>`;});
     h+=`</div>`;}
-  document.getElementById('view').innerHTML=h;
+  return h;
 }
 /* ===================== 🤝 برنامج الإحالة (Referral) ===================== */
 function refCode(empId){const seq=(state.referrals||[]).length+1;return 'R'+String(seq).padStart(3,'0');}
@@ -1168,9 +1168,6 @@ function render(){
     if(p==='branches')renderBranches();
     else if(p==='branch')renderBranch();
     else if(p==='dashboard')renderDashboard();
-    else if(p==='engine')renderEngine();
-    else if(p==='rescue')renderRescue();
-    else if(p==='campaigns')renderCampaigns();
     else if(p==='numbers')renderNumbers();
     else if(p==='manage')renderManage();
     else if(p==='messages')renderMessages();
@@ -1179,7 +1176,7 @@ function render(){
     const p=route.page;
     if(p==='messages')renderMessages();
     else if(p==='engine')renderEngine();
-    else if(p==='campaigns')renderCampaigns();
+    else if(p==='rescue')renderRescue();
     else{route.branchId=session.branchId;renderBranch();}
   }else{
     const p=route.page;
@@ -1187,6 +1184,7 @@ function render(){
     else if(p==='mystats')renderMyStats();
     else if(p==='mybranch')renderMyBranch();
     else if(p==='myengine')renderMyEngine();
+    else if(p==='rescue')renderRescue();
     else if(p==='messages')renderMessages();
     else renderMyDay();
   }
