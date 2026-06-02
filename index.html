@@ -144,13 +144,13 @@
 
 <script>
 /* ================= الإعدادات السحابية ================= */
-/* نفس مشروع Supabase بتاع الفيوم لكن جدول منفصل region_state.
-   لو عايز مشروع مختلف غيّر القيمتين دول فقط. */
+/* نفس مشروع Supabase بتاع الفيوم، نفس الجدول branch_state لكن بصف منفصل region-10
+   علشان ما نحتاجش ننشئ جدول جديد. لو عايز مشروع مختلف غيّر القيمتين دول فقط. */
 const CLOUD = {
   url: 'https://rmuoddwptwixusxqqejm.supabase.co',
   key: 'sb_publishable_PCPpRh5gz_DgC8H8ZqT8AA_l1M8Fewy',
   rowId: 'region-10',
-  table: 'region_state'
+  table: 'branch_state'
 };
 
 /* ================= نموذج البيانات ================= */
@@ -435,7 +435,7 @@ function empMiniRows(list){return list.map((x,i)=>`<tr><td><span class="rank">${
 function regionTopBottomHTML(){
   const all=allEmpsRanked();if(!all.length)return '';
   const top5=all.slice(0,5),bottom5=all.slice(-5).reverse();
-  return `<div class="grid" style="grid-template-columns:1fr 1fr;margin-bottom:14px">
+  return `<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-bottom:14px">
     <div class="card"><h3>🏆 أفضل 5 موظفين بالمنطقة</h3><div class="scroll"><table>
       <tr><th>#</th><th class="name">الموظف</th><th>التقييم</th></tr>${empMiniRows(top5)}</table></div></div>
     <div class="card"><h3>⚠️ أقل 5 موظفين بالمنطقة</h3><div class="scroll"><table>
@@ -856,7 +856,7 @@ async function pushCloud(){
   if(!sb)return;
   try{
     setSync('مزامنة…',true);
-    const {error}=await sb.from(CLOUD.table).update({data:state,updated_at:new Date().toISOString(),updated_by:deviceId()}).eq('id',CLOUD.rowId);
+    const {error}=await sb.from(CLOUD.table).upsert({id:CLOUD.rowId,data:state,updated_at:new Date().toISOString(),updated_by:deviceId()});
     setSync(error?'خطأ':'متصل',!error);
   }catch(e){setSync('غير متصل',false);}
 }
