@@ -22,7 +22,13 @@
   }
   *{box-sizing:border-box}
   html,body{max-width:100%;width:100%;overflow-x:clip}
-  body{margin:0;font-size:16px;line-height:1.5;font-family:"Segoe UI",Tahoma,"Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-text-size-adjust:100%;min-height:100vh;-webkit-font-smoothing:antialiased}
+  body{margin:0;font-size:16px;line-height:1.5;font-family:"Segoe UI",Tahoma,"Helvetica Neue",Arial,sans-serif;color:var(--ink);-webkit-text-size-adjust:100%;min-height:100vh;-webkit-font-smoothing:antialiased;
+    background:
+      radial-gradient(1100px 460px at 88% -8%, rgba(123,164,40,.20), transparent 60%),
+      radial-gradient(900px 420px at -6% 12%, rgba(168,198,57,.16), transparent 58%),
+      radial-gradient(800px 600px at 50% 120%, rgba(92,126,28,.14), transparent 60%),
+      linear-gradient(160deg,#eaf1dc 0%,#f6f9ef 34%,#ffffff 56%,#eef4e0 100%);
+    background-attachment:fixed}
   canvas,img{max-width:100%}
 
   header{position:sticky;top:0;z-index:20;background:linear-gradient(120deg,#2e4d16 0%,#5C7E1C 55%,#6D9228 100%);color:#fff;padding:16px 18px;box-shadow:0 6px 22px rgba(46,77,22,.28)}
@@ -46,7 +52,10 @@
   .grid{display:grid;gap:14px}
   .grid.cards{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
 
-  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--sh)}
+  .card{position:relative;background:linear-gradient(168deg,#ffffff 0%,#fbfdf7 60%,#f1f6e8 100%);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--sh);overflow:hidden}
+  .card::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,#7BA428,#A4C639,#C8A24B)}
+  .mini td.name,.mini th.name{white-space:normal!important;word-break:break-word}
+  .mini{table-layout:fixed}
   .card h2{margin:0 0 4px;font-size:19px;font-weight:800}
   .card h3{margin:0 0 10px;font-size:16px;font-weight:700;color:var(--ink)}
   .row{display:flex;justify-content:space-between;align-items:center;gap:8px}
@@ -427,10 +436,10 @@ function regionTopBottomHTML(){
   const all=allEmpsRanked();if(!all.length)return '';
   const top5=all.slice(0,5),bottom5=all.slice(-5).reverse();
   return `<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-bottom:14px">
-    <div class="card"><h3>🏆 أفضل 5 موظفين بالمنطقة</h3><div class="scroll"><table>
-      <tr><th>#</th><th class="name">الموظف</th><th>التقييم</th></tr>${empMiniRows(top5)}</table></div></div>
-    <div class="card"><h3>⚠️ أقل 5 موظفين بالمنطقة</h3><div class="scroll"><table>
-      <tr><th>#</th><th class="name">الموظف</th><th>التقييم</th></tr>${empMiniRows(bottom5)}</table></div></div></div>`;
+    <div class="card"><h3>🏆 أفضل 5 موظفين بالمنطقة</h3><table class="mini">
+      <tr><th style="width:42px">#</th><th class="name">الموظف</th><th style="width:78px">التقييم</th></tr>${empMiniRows(top5)}</table></div>
+    <div class="card"><h3>⚠️ أقل 5 موظفين بالمنطقة</h3><table class="mini">
+      <tr><th style="width:42px">#</th><th class="name">الموظف</th><th style="width:78px">التقييم</th></tr>${empMiniRows(bottom5)}</table></div></div>`;
 }
 function renderRegion(){
   const r=aggRegion();
