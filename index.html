@@ -391,21 +391,15 @@ function renderNav(){
     if(route.page==='branch'){const b=state.branches.find(x=>x.id===route.branchId);if(b)h+=`<button class="active">📂 ${esc(b.name)}</button>`;}
     h+=`<button class="${route.page==='messages'?'active':''}" onclick="go('messages')">📨 الرسائل${msgBadge()}</button>`;
     h+=`<button class="${route.page==='numbers'?'active':''}" onclick="go('numbers')">🔢 الأرقام</button>`;
-    h+=`<button class="${route.page==='ideas'?'active':''}" onclick="go('ideas')">💡 أفكار</button>`;
     h+=`<button class="${route.page==='engine'?'active':''}" onclick="go('engine')">🎯 المحرّك</button>`;
     h+=`<button class="${route.page==='rescue'?'active':''}" onclick="go('rescue')">🚑 الإنقاذ</button>`;
-    h+=`<button class="${route.page==='race'?'active':''}" onclick="go('race')">🏆 السباق</button>`;
     h+=`<button class="${route.page==='campaigns'?'active':''}" onclick="go('campaigns')">📣 الحملات</button>`;
-    h+=`<button class="${route.page==='referral'?'active':''}" onclick="go('referral')">🤝 الإحالة</button>`;
     h+=`<button class="${route.page==='manage'?'active':''}" onclick="go('manage')">⚙️ الإدارة</button>`;
     nav.innerHTML=h;
   }else if(session.role==='manager'){
     nav.innerHTML=`<button class="${route.page==='branch'?'active':''}" onclick="go('branch','${session.branchId}')">📂 فرعي</button>
       <button class="${route.page==='engine'?'active':''}" onclick="go('engine')">🎯 المحرّك</button>
-      <button class="${route.page==='race'?'active':''}" onclick="go('race')">🏆 السباق</button>
-      <button class="${route.page==='ideas'?'active':''}" onclick="go('ideas')">💡 أفكار</button>
       <button class="${route.page==='campaigns'?'active':''}" onclick="go('campaigns')">📣 الحملات</button>
-      <button class="${route.page==='referral'?'active':''}" onclick="go('referral')">🤝 الإحالة</button>
       <button class="${route.page==='messages'?'active':''}" onclick="go('messages')">📨 الرسائل${msgBadge()}</button>`;
   }else{
     nav.innerHTML=`<button class="${route.page==='myday'?'active':''}" onclick="go('myday')">📝 إدخال اليوم</button>
@@ -413,9 +407,6 @@ function renderNav(){
       <button class="${route.page==='mystats'?'active':''}" onclick="go('mystats')">📈 أدائي</button>
       <button class="${route.page==='mybranch'?'active':''}" onclick="go('mybranch')">🏢 فرعي</button>
       <button class="${route.page==='myengine'?'active':''}" onclick="go('myengine')">🎯 خطتي</button>
-      <button class="${route.page==='race'?'active':''}" onclick="go('race')">🏆 السباق</button>
-      <button class="${route.page==='ideas'?'active':''}" onclick="go('ideas')">💡 أفكار</button>
-      <button class="${route.page==='referral'?'active':''}" onclick="go('referral')">🤝 الإحالة</button>
       <button class="${route.page==='messages'?'active':''}" onclick="go('messages')">📨 الرسائل${msgBadge()}</button>`;
   }
 }
@@ -1168,12 +1159,9 @@ function render(){
     if(p==='branches')renderBranches();
     else if(p==='branch')renderBranch();
     else if(p==='dashboard')renderDashboard();
-    else if(p==='ideas')renderIdeas();
     else if(p==='engine')renderEngine();
     else if(p==='rescue')renderRescue();
-    else if(p==='race')renderRace();
     else if(p==='campaigns')renderCampaigns();
-    else if(p==='referral')renderReferral();
     else if(p==='numbers')renderNumbers();
     else if(p==='manage')renderManage();
     else if(p==='messages')renderMessages();
@@ -1181,21 +1169,15 @@ function render(){
   }else if(session.role==='manager'){
     const p=route.page;
     if(p==='messages')renderMessages();
-    else if(p==='ideas')renderIdeas();
     else if(p==='engine')renderEngine();
-    else if(p==='race')renderRace();
     else if(p==='campaigns')renderCampaigns();
-    else if(p==='referral')renderReferral();
     else{route.branchId=session.branchId;renderBranch();}
   }else{
     const p=route.page;
     if(p==='myfollow')renderMyFollow();
     else if(p==='mystats')renderMyStats();
     else if(p==='mybranch')renderMyBranch();
-    else if(p==='ideas')renderIdeas();
     else if(p==='myengine')renderMyEngine();
-    else if(p==='race')renderRace();
-    else if(p==='referral')renderReferral();
     else if(p==='messages')renderMessages();
     else renderMyDay();
   }
