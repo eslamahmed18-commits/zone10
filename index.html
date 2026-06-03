@@ -1194,5 +1194,115 @@ if(session&&session.role==='manager')route={page:'branch',branchId:session.branc
 render();
 initCloud();
 </script>
+
+<script>
+(function(){
+  if(window.__z10enhDone) return 'already'; window.__z10enhDone=true;
+  var st=document.createElement('style'); st.id='z10enh-css';
+  st.textContent=
+  ".mini{table-layout:auto!important}"+
+  ".mini td.name,.mini th.name{white-space:normal!important;word-break:normal!important;overflow-wrap:break-word!important;min-width:120px;max-width:none!important;text-align:right;line-height:1.5}"+
+  ".z-frame{border:2px solid #2e7d1e!important;box-shadow:0 0 0 3px rgba(46,125,30,.15),0 10px 26px rgba(46,125,30,.18)!important;border-radius:18px!important}"+
+  ".z-frame::before{background:linear-gradient(90deg,#2e7d1e,#4caf2f,#7BA428,#2e7d1e)!important;height:5px!important}"+
+  ".z-login{cursor:pointer;transition:transform .15s,box-shadow .15s}"+
+  ".z-login:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(46,125,30,.22)}"+
+  ".z-login .z-ic{width:64px;height:64px;margin:0 auto 6px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;background:linear-gradient(135deg,#2e7d1e,#6D9228);color:#fff;box-shadow:0 6px 16px rgba(46,125,30,.35)}"+
+  ".z-input{width:100%;padding:9px 11px;border:1.5px solid #cdd8bd;border-radius:10px;font:inherit;margin-top:4px;background:#fff;box-sizing:border-box}"+
+  ".z-input:focus{outline:none;border-color:#2e7d1e}"+
+  ".z-btn{background:linear-gradient(135deg,#2e7d1e,#6D9228);color:#fff;border:none;padding:11px 18px;border-radius:10px;font:inherit;font-weight:700;cursor:pointer}"+
+  ".z-btn:hover{filter:brightness(1.07)}"+
+  ".z-row{display:flex;gap:10px;flex-wrap:wrap}"+
+  ".z-th{background:#eef4e0;color:#2e4d16;font-weight:700}"+
+  ".z-rank-me{background:linear-gradient(120deg,#e8f3df,#f6f9ef);font-weight:800}";
+  document.head.appendChild(st);
+
+  var _land=window.renderLanding;
+  window.renderLanding=function(){ _land.apply(this,arguments); try{
+    var v=document.getElementById('view'); if(!v) return;
+    [].slice.call(v.querySelectorAll('.card')).forEach(function(c){
+      var oc=c.getAttribute('onclick')||'';
+      if(/start(Employee|Manager|Admin)Login/.test(oc)){ c.classList.add('z-login'); var ic=c.children[0]; if(ic&&!ic.classList.contains('z-ic')) ic.classList.add('z-ic'); }
+      else if(/المنطقة العاشرة/.test(c.textContent||'')){ c.classList.add('z-frame'); }
+    });
+  }catch(e){} };
+
+  window.__zrank=function(){
+    function agg(bid){
+      var br=state.branches.find(function(b){return b.id===bid;}); if(!br) return null;
+      var tgt={},act={}; PRODUCTS.forEach(function(p){tgt[p.key]=0;act[p.key]=0;});
+      (br.employees||[]).forEach(function(e){ PRODUCTS.forEach(function(p){ tgt[p.key]+=(e.targets&&+e.targets[p.key])||0; }); });
+      var bt=(state.branchTotals||{})[bid];
+      if(bt&&bt.values){ PRODUCTS.forEach(function(p){ act[p.key]=(+bt.values[p.key])||0; }); }
+      else { (state.entries||[]).filter(function(en){return en.branchId===bid;}).forEach(function(en){ PRODUCTS.forEach(function(p){ act[p.key]+=(en.values&&+en.values[p.key])||0; }); }); }
+      var sw=0,acc=0; PRODUCTS.forEach(function(p){ var w=+p.weight||1; sw+=w; var pct=tgt[p.key]>0?act[p.key]/tgt[p.key]:0; acc+=w*Math.min(pct,1.5); });
+      return {br:br,score:sw?(acc/sw*100):0};
+    }
+    var arr=state.branches.map(function(b){return agg(b.id);}).filter(Boolean);
+    arr.sort(function(a,b){return b.score-a.score;}); arr.forEach(function(o,i){o.rank=i+1;}); return arr;
+  };
+  window.branchTotalsHTML=function(){
+    var bid=session.branchId; var br=state.branches.find(function(b){return b.id===bid;});
+    var bt=(state.branchTotals||{})[bid]||{values:{}};
+    var rows=PRODUCTS.map(function(p){ var v=(bt.values&&bt.values[p.key]!=null)?bt.values[p.key]:''; return '<div style="margin-bottom:10px"><label>'+p.label+' <span class="muted">('+(p.unit||'')+')</span></label><input class="z-input" id="zt_'+p.key+'" type="number" inputmode="numeric" value="'+v+'"></div>'; }).join('');
+    var upd= bt.updatedAt? '<div class="muted" style="margin-top:6px">آخر تحديث: '+new Date(bt.updatedAt).toLocaleString('ar-EG')+'</div>':'';
+    return '<div class="card z-frame"><h3 style="margin:0 0 4px">🧮 أرقام الفرع الإجمالية — '+(br?br.name:'')+'</h3><div class="muted">أدخل الإجمالي المحقق للفرع لكل منتج. تُستخدم في الترتيب والمقارنة.</div></div><div class="card">'+rows+'<div class="z-row" style="margin-top:6px"><button class="z-btn" onclick="saveBranchTotals()">💾 حفظ أرقام الفرع</button></div>'+upd+'</div>';
+  };
+  window.saveBranchTotals=function(){
+    var bid=session.branchId; state.branchTotals=state.branchTotals||{}; var vals={};
+    PRODUCTS.forEach(function(p){ var el=document.getElementById('zt_'+p.key); var n=el?parseFloat(el.value):NaN; vals[p.key]=isNaN(n)?0:n; });
+    state.branchTotals[bid]={values:vals,updatedAt:new Date().toISOString(),by:(typeof deviceId==='function'?deviceId():'')};
+    commit(false); alert('تم حفظ أرقام الفرع ✅');
+  };
+  window.compareHTML=function(){
+    var bid=session.branchId; var r=window.__zrank(); var me=r.find(function(o){return o.br.id===bid;});
+    var head='<div class="card z-frame"><h3 style="margin:0">📊 ترتيب فرعك في المنطقة</h3>'+(me?('<div style="font-size:15px;margin-top:6px">فرع <b>'+me.br.name+'</b> ترتيبه <b style="color:#2e7d1e;font-size:20px">'+me.rank+'</b> من '+r.length+' فرع — نسبة الإنجاز <b>'+me.score.toFixed(1)+'%</b></div>'):'')+'</div>';
+    var trs=r.map(function(o){ return '<tr class="'+(o.br.id===bid?'z-rank-me':'')+'"><td>'+o.rank+'</td><td class="name">'+o.br.name+'</td><td>'+o.score.toFixed(1)+'%</td></tr>'; }).join('');
+    return head+'<div class="card"><h3 style="margin:0 0 8px">مقارنة كل الفروع</h3><table class="mini" style="width:100%;border-collapse:collapse"><thead><tr class="z-th"><th style="width:48px">#</th><th class="name">الفرع</th><th style="width:90px">الإنجاز</th></tr></thead><tbody>'+trs+'</tbody></table></div>';
+  };
+  window.sendMsgHTML=function(){
+    var opts=state.branches.map(function(b){return '<option value="'+b.id+'">'+b.name+'</option>';}).join('');
+    var prev=(state.zmsgs||[]).slice().reverse().slice(0,20).map(function(m){ var bn=(state.branches.find(function(b){return b.id===m.toBranch;})||{}).name||(m.toBranch==='*'?'كل الفروع':m.toBranch); return '<tr><td class="name">'+bn+'</td><td class="name">'+(m.text||'').replace(/</g,'&lt;')+'</td><td>'+(m.read?'مقروءة':'غير مقروءة')+'</td><td>'+new Date(m.at).toLocaleString('ar-EG')+'</td></tr>'; }).join('');
+    return '<div class="card z-frame"><h3 style="margin:0">📨 مراسلة مدراء الفروع</h3></div><div class="card"><div style="margin-bottom:8px"><label>الفرع</label><select class="z-input" id="zsend_b"><option value="*">كل الفروع</option>'+opts+'</select></div><div style="margin-bottom:8px"><label>الرسالة</label><textarea class="z-input" id="zsend_t" rows="3"></textarea></div><button class="z-btn" onclick="adminSendMsg()">📤 إرسال</button></div><div class="card"><h3 style="margin:0 0 8px">الرسائل المرسلة</h3><table class="mini" style="width:100%;border-collapse:collapse"><thead><tr class="z-th"><th class="name">إلى</th><th class="name">النص</th><th>الحالة</th><th>الوقت</th></tr></thead><tbody>'+prev+'</tbody></table></div>';
+  };
+  window.adminSendMsg=function(){
+    var b=document.getElementById('zsend_b').value; var t=(document.getElementById('zsend_t').value||'').trim();
+    if(!t) return alert('اكتب نص الرسالة');
+    state.zmsgs=state.zmsgs||[]; state.zmsgs.push({id:(typeof uid==='function'?uid('zm'):'zm'+Date.now()), toBranch:b, text:t, at:new Date().toISOString(), read:false});
+    commit(false); alert('تم إرسال الرسالة ✅');
+  };
+  window.__zInbox=function(bid){ return (state.zmsgs||[]).filter(function(m){return m.toBranch===bid||m.toBranch==='*';}); };
+  window.__zUnread=function(bid){ return window.__zInbox(bid).filter(function(m){return !m.read;}).length; };
+  window.inboxHTML=function(){
+    var bid=session.branchId; var ms=window.__zInbox(bid).slice().reverse();
+    var rows=ms.length? ms.map(function(m){ return '<div class="card" style="'+(!m.read?'border-inline-start:4px solid #2e7d1e;':'')+'margin-bottom:10px"><div style="white-space:pre-wrap">'+(m.text||'').replace(/</g,'&lt;')+'</div><div class="muted" style="margin-top:6px">'+new Date(m.at).toLocaleString('ar-EG')+(m.toBranch==='*'?' • للجميع':'')+'</div></div>'; }).join('') : '<div class="card muted">لا توجد رسائل.</div>';
+    var changed=false; window.__zInbox(bid).forEach(function(m){if(!m.read){m.read=true;changed=true;}});
+    if(changed){ if(typeof saveLocal==='function')saveLocal(); if(typeof schedulePush==='function')schedulePush(); }
+    return '<div class="card z-frame"><h3 style="margin:0">📨 رسائل الإدارة</h3></div>'+rows;
+  };
+
+  if(!window.__zDeleg){ window.__zDeleg=true; document.addEventListener('click',function(e){ var b=e.target.closest?e.target.closest('[data-zgo]'):null; if(b){ go(b.getAttribute('data-zgo')); } }); }
+
+  var _nav=window.renderNav;
+  window.renderNav=function(){
+    _nav.apply(this,arguments);
+    try{ var nav=document.getElementById('nav'); if(!nav||!session) return;
+      if(session.role==='manager'){ var u=window.__zUnread(session.branchId);
+        nav.insertAdjacentHTML('beforeend','<button data-zgo="zt" class="'+(route.page==='zt'?'active':'')+'">🧮 أرقام الفرع</button><button data-zgo="zc" class="'+(route.page==='zc'?'active':'')+'">📊 ترتيب فرعي</button><button data-zgo="zinbox" class="'+(route.page==='zinbox'?'active':'')+'">📨 الرسائل'+(u?' ('+u+')':'')+'</button>');
+      } else if(session.role==='admin'){ nav.insertAdjacentHTML('beforeend','<button data-zgo="zsend" class="'+(route.page==='zsend'?'active':'')+'">📨 مراسلة المدراء</button>'); }
+    }catch(e){}
+  };
+  var _render=window.render;
+  window.render=function(){
+    _render.apply(this,arguments); if(!session) return;
+    var p=route&&route.page; var v=document.getElementById('view'); if(!v) return;
+    if(p==='zt'&&session.role==='manager') v.innerHTML=branchTotalsHTML();
+    else if(p==='zc'&&session.role==='manager') v.innerHTML=compareHTML();
+    else if(p==='zinbox'&&session.role==='manager') v.innerHTML=inboxHTML();
+    else if(p==='zsend'&&session.role==='admin') v.innerHTML=sendMsgHTML();
+  };
+  if(typeof render==='function'&&session) render();
+  return 'ok';
+})();
+</script>
 </body>
 </html>
