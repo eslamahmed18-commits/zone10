@@ -1609,5 +1609,35 @@ initCloud();
     }catch(e){}
   };
 })();</script>
+<script>(function(){
+  if(window.__z10enh7flag) return;
+  window.__z10enh7flag=true;
+  try{
+    if(typeof normalize==='function'){
+      var _norm=normalize;
+      window.normalize=function(s){var r=_norm.apply(this,arguments);try{if(r&&!r.branchTotals)r.branchTotals={};}catch(e){}return r;};
+    }
+  }catch(e){}
+  try{
+    if(typeof mergeState==='function'){
+      var _merge=mergeState;
+      window.mergeState=function(a,b){
+        var out=_merge.apply(this,arguments);
+        try{
+          var A=(a&&a.branchTotals)||{}, B=(b&&b.branchTotals)||{};
+          out.branchTotals=out.branchTotals||{};
+          var pick=function(x,y){
+            if(!x)return y; if(!y)return x;
+            var tx=Date.parse(x.updatedAt||x.date||'')||0, ty=Date.parse(y.updatedAt||y.date||'')||0;
+            return ty>=tx?y:x;
+          };
+          var ids={};Object.keys(A).forEach(function(k){ids[k]=1;});Object.keys(B).forEach(function(k){ids[k]=1;});
+          Object.keys(ids).forEach(function(id){out.branchTotals[id]=pick(A[id],B[id]);});
+        }catch(e){}
+        return out;
+      };
+    }
+  }catch(e){}
+})();</script>
 </body>
 </html>
