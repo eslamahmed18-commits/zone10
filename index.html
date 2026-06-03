@@ -1304,5 +1304,82 @@ initCloud();
   return 'ok';
 })();
 </script>
+<script>(function(){
+  // A) more green
+  if(!document.getElementById('z10enh2-css')){
+    var st=document.createElement('style'); st.id='z10enh2-css';
+    st.textContent=[
+      'body{background:linear-gradient(180deg,#eef9f1 0%,#e2f4e9 100%)!important}',
+      'h1,h2,h3,h4{color:#16713e!important}',
+      '.card h3{color:#16713e!important}',
+      'table th,.mini th,.z-th{background:#16713e!important;color:#fff!important}',
+      '.pill,.badge,.chip{background:#e7f7ec!important;color:#13693a!important;border-color:#b6e6c6!important}',
+      'button.primary,.btn-primary,.z-btn,.primary{background:#16713e!important;border-color:#16713e!important;color:#fff!important}',
+      '.field input,.z-input,select,textarea{border-color:#bfe3cb!important}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+  // B) backdating branch totals
+  if(window.branchTotalsHTML && !window.__btWrapped){
+    window.__btWrapped=true;
+    var _bt=window.branchTotalsHTML;
+    window.branchTotalsHTML=function(){
+      var h=_bt.apply(this,arguments);
+      var bid=(typeof session!=='undefined'&&session)?session.branchId:null;
+      var bt=(typeof state!=='undefined'&&state.branchTotals&&bid)?state.branchTotals[bid]:null;
+      var hist='';
+      if(bt&&bt.history){
+        var ks=Object.keys(bt.history).sort().reverse();
+        if(ks.length){ hist='<div class="card"><h3>📅 سجل أرقام الفرع بالتواريخ</h3><table class="mini"><tr><th>التاريخ</th><th>كيوماتيك</th><th>تللير</th><th>خدمة عملاء</th></tr>'+ks.map(function(d){var r=bt.history[d];return '<tr><td>'+d+'</td><td>'+(r.qmatic||0)+'</td><td>'+(r.tellers||0)+'</td><td>'+(r.cs||0)+'</td></tr>';}).join('')+'</table></div>'; }
+      }
+      var dv=(typeof todayStr==='function')?todayStr():new Date().toISOString().slice(0,10);
+      var dateField='<div class="card"><h3>🗓️ تاريخ الإدخال</h3><div class="field"><label>اختر التاريخ (يمكن اختيار تاريخ سابق)</label><input type="date" id="zt_date" value="'+dv+'"></div></div>';
+      return dateField+h+hist;
+    };
+  }
+  // override save to store by date
+  if(window.saveBranchTotals && !window.__sbtWrapped){
+    window.__sbtWrapped=true;
+    window.saveBranchTotals=function(){
+      var bid=session.branchId; state.branchTotals=state.branchTotals||{};
+      var vals={};
+      PRODUCTS.forEach(function(p){ var el=document.getElementById('zt_'+p.key); var n=el?parseFloat(el.value):NaN; vals[p.key]=isNaN(n)?0:n; });
+      function num(id){var e=document.getElementById(id);return e?(parseFloat(e.value)||0):0;}
+      var tellers=num('zt_tellers'), cs=num('zt_cs'), qmatic=tellers+cs;
+      var de=document.getElementById('zt_date'); var date=(de&&de.value)?de.value:((typeof todayStr==='function')?todayStr():new Date().toISOString().slice(0,10));
+      var prev=state.branchTotals[bid]||{};
+      var history=prev.history||{};
+      history[date]={values:vals,tellers:tellers,cs:cs,qmatic:qmatic};
+      state.branchTotals[bid]={values:vals,tellers:tellers,cs:cs,qmatic:qmatic,date:date,history:history,updatedAt:new Date().toISOString(),by:(typeof deviceId==='function'?deviceId():'')};
+      commit(false);
+      alert('تم حفظ أرقام الفرع لتاريخ '+date+' ✅');
+      if(typeof render==='function') render();
+    };
+  }
+  // C) ranking first for manager & admin on region page
+  if(window.render && !window.__rankFirstWrapped){
+    window.__rankFirstWrapped=true;
+    var _r=window.render;
+    window.render=function(){
+      var ret=_r.apply(this,arguments);
+      try{
+        var role=(typeof session!=='undefined'&&session)?session.role:null;
+        if((role==='manager'||role==='admin') && typeof route!=='undefined' && route && route.page==='region'){
+          var view=document.getElementById('view');
+          if(view && !document.getElementById('z-rankfirst')){
+            var rk=window.__zrank?window.__zrank():[];
+            var rows=rk.map(function(x){return '<tr'+((role==='manager'&&session.branchId===x.br.id)?' style="background:#d6f5e0;font-weight:700"':'')+'><td>'+x.rank+'</td><td>'+x.br.name+'</td><td>'+Math.round(x.score)+'%</td></tr>';}).join('');
+            var box=document.createElement('div');
+            box.id='z-rankfirst'; box.className='card';
+            box.style.cssText='border:2px solid #16713e;background:#eaf8ef';
+            box.innerHTML='<h3>🏆 ترتيب الفروع في المنطقة</h3><table class="mini"><tr><th>الترتيب</th><th>الفرع</th><th>نسبة الإنجاز</th></tr>'+rows+'</table>';
+            view.insertBefore(box, view.firstChild);
+          }
+        }
+      }catch(e){}
+      return ret;
+    };
+  }
+})();</script>
 </body>
 </html>
