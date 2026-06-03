@@ -1381,5 +1381,49 @@ initCloud();
     };
   }
 })();</script>
+<script>(function(){
+  window.__zclass=function(p){ p=Math.round(p||0); if(p<=50) return {l:'يحتاج إلى تطوير',bg:'#fdecec',fg:'#b3261e'}; if(p<=80) return {l:'يلبي التوقعات',bg:'#fff6e5',fg:'#9a6700'}; return {l:'يفوق التوقعات',bg:'#e7f7ec',fg:'#13693a'}; };
+  if(window.render && !window.__enh3Wrapped){
+    window.__enh3Wrapped=true;
+    var _r=window.render;
+    window.render=function(){
+      var ret=_r.apply(this,arguments);
+      try{
+        if(!window.__logoSrc){ var im=document.querySelector('img[src^="data:image"]'); if(im) window.__logoSrc=im.src; }
+        document.querySelectorAll('[onclick]').forEach(function(el){
+          var oc=el.getAttribute('onclick')||'';
+          if(/start(Employee|Manager|Admin)Login/.test(oc) && !el.__pro){
+            el.__pro=true;
+            var ic=el.querySelector('.z-ic');
+            if(ic && window.__logoSrc){
+              ic.style.cssText='width:76px;height:76px;margin:0 auto 12px;border-radius:50%;background:#fff;border:3px solid #16713e;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 4px 14px rgba(22,113,62,.28)';
+              ic.innerHTML='<img src="'+window.__logoSrc+'" style="width:86%;height:86%;object-fit:contain">';
+            }
+            el.style.cssText=(el.style.cssText||'')+';text-align:center;border:1px solid #b6e6c6;background:linear-gradient(180deg,#ffffff,#eaf8ef);border-radius:16px;padding:24px 16px';
+          }
+        });
+        var box=document.getElementById('z-rankfirst');
+        if(box && !box.__cls){
+          box.__cls=true;
+          var trs=box.querySelectorAll('table tr');
+          for(var i=0;i<trs.length;i++){
+            if(i===0){ var th=document.createElement('th'); th.textContent='التصنيف'; trs[i].appendChild(th); }
+            else{
+              var tds=trs[i].querySelectorAll('td');
+              var pctTxt=tds.length?tds[tds.length-1].textContent:'0';
+              var p=parseFloat(pctTxt)||0; var c=window.__zclass(p);
+              var td=document.createElement('td'); td.textContent=c.l; td.style.cssText='background:'+c.bg+';color:'+c.fg+';font-weight:700;border-radius:6px';
+              trs[i].appendChild(td);
+            }
+          }
+          var lg=document.createElement('div'); lg.style.cssText='margin-top:8px;font-size:12px;color:#555;line-height:1.8';
+          lg.innerHTML='<span style="color:#b3261e">●</span> 0–50% يحتاج إلى تطوير &nbsp; <span style="color:#9a6700">●</span> 51–80% يلبي التوقعات &nbsp; <span style="color:#13693a">●</span> 81–100% يفوق التوقعات';
+          box.appendChild(lg);
+        }
+      }catch(e){}
+      return ret;
+    };
+  }
+})();</script>
 </body>
 </html>
