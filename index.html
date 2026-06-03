@@ -1524,5 +1524,90 @@ initCloud();
     }catch(e){}
   };
 })();</script>
+<script>(function(){
+  if(window.__z10enh6flag) return;
+  window.__z10enh6flag=true;
+  // 1) Make branch actuals reflect manager-entered branchTotals
+  try{
+    if(typeof aggBranch==='function'){
+      var _agg=aggBranch;
+      window.aggBranch=function(b){
+        var res=_agg.apply(this,arguments);
+        try{
+          var bt=((typeof state!=='undefined'&&state.branchTotals)||{})[b.id];
+          if(bt&&bt.values){
+            PRODUCTS.forEach(function(p){
+              var val=bt.values[p.key];
+              if(val!=null&&val!==''&&(+val)>0) res.a[p.key]=(+val)||0;
+            });
+            if(typeof weightedScore==='function') res.score=weightedScore(res.t,res.a);
+          }
+        }catch(e){}
+        return res;
+      };
+    }
+  }catch(e){}
+  // 2) Branch-figures view (zfig) with totals column + totals row (supersedes enh5 table)
+  var _render=window.render;
+  window.render=function(){
+    _render.apply(this,arguments);
+    try{
+      if(typeof route==='undefined'||!route||route.page!=='zfig') return;
+      if(typeof session==='undefined'||!session||(session.role!=='admin'&&session.role!=='manager')) return;
+      var view=document.getElementById('view');if(!view) return;
+      var bt=((typeof state!=='undefined'&&state.branchTotals)||{});
+      var ranks=[];try{ranks=window.__zrank()||[];}catch(e){}
+      var branches=ranks.map(function(r){return r.br;});
+      if(session.role==='manager'){branches=branches.filter(function(b){return b&&b.id===session.branchId;});}
+      var prods=(typeof PRODUCTS!=='undefined'&&PRODUCTS)||[];
+      var bd='1px solid #d6ecdb';
+      var fmt=function(n){n=+n||0;return n.toLocaleString('en-US');};
+      var h='<div class="card" style="margin:10px 0"><h3 style="color:#16713e;margin:4px 0 12px">\u{1F4CB} أرقام الفروع المُدخلة</h3>';
+      h+='<div style="overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background:#dcf2e4">';
+      h+='<th style="padding:6px;border:1px solid #b6e6c6">الفرع</th>';
+      for(var i=0;i<prods.length;i++){h+='<th style="padding:6px;border:1px solid #b6e6c6">'+prods[i].label+'</th>';}
+      h+='<th style="padding:6px;border:1px solid #b6e6c6;background:#16713e;color:#fff">إجمالي المنتجات</th>';
+      h+='<th style="padding:6px;border:1px solid #b6e6c6">عدد التللير</th>';
+      h+='<th style="padding:6px;border:1px solid #b6e6c6">خدمة العملاء</th>';
+      h+='<th style="padding:6px;border:1px solid #b6e6c6">الكيوماتيك</th>';
+      h+='<th style="padding:6px;border:1px solid #b6e6c6">إيداع الشركات</th>';
+      h+='<th style="padding:6px;border:1px solid #b6e6c6">ودائع شركات</th>';
+      h+='<th style="padding:6px;border:1px solid #b6e6c6">التاريخ</th></tr></thead><tbody>';
+      var col={}, prodGrand=0, tT=0,tC=0,tQ=0,tCD=0,tCV=0;
+      prods.forEach(function(p){col[p.key]=0;});
+      for(var j=0;j<branches.length;j++){
+        var b=branches[j];if(!b)continue;var d=bt[b.id];
+        h+='<tr><td style="padding:6px;border:'+bd+';font-weight:bold">'+(b.name||'')+'</td>';
+        if(!d){h+='<td colspan="'+(prods.length+7)+'" style="padding:6px;border:'+bd+';color:#999">لا توجد أرقام مُدخلة</td></tr>';continue;}
+        var v=d.values||{};var rowSum=0;
+        for(var p2=0;p2<prods.length;p2++){var val=(+v[prods[p2].key])||0;rowSum+=val;col[prods[p2].key]+=val;h+='<td style="padding:6px;border:'+bd+';text-align:center">'+fmt(val)+'</td>';}
+        prodGrand+=rowSum;
+        h+='<td style="padding:6px;border:'+bd+';text-align:center;font-weight:bold;background:#eaf8ef">'+fmt(rowSum)+'</td>';
+        var dt=(+d.tellers)||0,dc=(+d.cs)||0,dq=(+d.qmatic)||0,dcd=(+d.corpDep)||0,dcv=(+d.corpSav)||0;
+        tT+=dt;tC+=dc;tQ+=dq;tCD+=dcd;tCV+=dcv;
+        h+='<td style="padding:6px;border:'+bd+';text-align:center">'+fmt(dt)+'</td>';
+        h+='<td style="padding:6px;border:'+bd+';text-align:center">'+fmt(dc)+'</td>';
+        h+='<td style="padding:6px;border:'+bd+';text-align:center">'+fmt(dq)+'</td>';
+        h+='<td style="padding:6px;border:'+bd+';text-align:center">'+fmt(dcd)+'</td>';
+        h+='<td style="padding:6px;border:'+bd+';text-align:center">'+fmt(dcv)+'</td>';
+        h+='<td style="padding:6px;border:'+bd+';text-align:center">'+(d.date||'-')+'</td></tr>';
+      }
+      // totals row (admin only / multiple branches)
+      if(branches.length>1){
+        h+='<tr style="background:#16713e;color:#fff;font-weight:bold"><td style="padding:6px;border:1px solid #b6e6c6">الإجمالي العام</td>';
+        for(var p3=0;p3<prods.length;p3++){h+='<td style="padding:6px;border:1px solid #b6e6c6;text-align:center">'+fmt(col[prods[p3].key])+'</td>';}
+        h+='<td style="padding:6px;border:1px solid #b6e6c6;text-align:center">'+fmt(prodGrand)+'</td>';
+        h+='<td style="padding:6px;border:1px solid #b6e6c6;text-align:center">'+fmt(tT)+'</td>';
+        h+='<td style="padding:6px;border:1px solid #b6e6c6;text-align:center">'+fmt(tC)+'</td>';
+        h+='<td style="padding:6px;border:1px solid #b6e6c6;text-align:center">'+fmt(tQ)+'</td>';
+        h+='<td style="padding:6px;border:1px solid #b6e6c6;text-align:center">'+fmt(tCD)+'</td>';
+        h+='<td style="padding:6px;border:1px solid #b6e6c6;text-align:center">'+fmt(tCV)+'</td>';
+        h+='<td style="padding:6px;border:1px solid #b6e6c6"></td></tr>';
+      }
+      h+='</tbody></table></div></div>';
+      view.innerHTML=h;
+    }catch(e){}
+  };
+})();</script>
 </body>
 </html>
