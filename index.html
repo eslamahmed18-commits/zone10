@@ -1466,5 +1466,63 @@ initCloud();
     };
   }
 })();</script>
+<script>(function(){
+  if(window.__z10enh5flag) return;
+  window.__z10enh5flag=true;
+  var _nav=window.renderNav;
+  window.renderNav=function(){
+    _nav.apply(this,arguments);
+    try{
+      var nav=document.getElementById('nav');
+      if(!nav||typeof session==='undefined'||!session) return;
+      if(session.role==='admin'||session.role==='manager'){
+        if(!nav.querySelector('[data-zgo="zfig"]')){
+          nav.insertAdjacentHTML('beforeend','<button data-zgo="zfig" class="'+(route.page==='zfig'?'active':'')+'">\u{1F4CB} أرقام الفروع</button>');
+        }
+      }
+    }catch(e){}
+  };
+  var _render=window.render;
+  window.render=function(){
+    _render.apply(this,arguments);
+    try{
+      if(typeof route==='undefined'||!route||route.page!=='zfig') return;
+      if(typeof session==='undefined'||!session||(session.role!=='admin'&&session.role!=='manager')) return;
+      var view=document.getElementById('view');
+      if(!view) return;
+      var bt=(typeof state!=='undefined'&&state.branchTotals)||{};
+      var ranks=[];try{ranks=window.__zrank()||[];}catch(e){}
+      var branches=ranks.map(function(r){return r.br;});
+      if(session.role==='manager'){branches=branches.filter(function(b){return b&&b.id===session.branchId;});}
+      var prods=(typeof PRODUCTS!=='undefined'&&PRODUCTS)||[];
+      var bd='1px solid #d6ecdb';
+      var h='<div class="card" style="margin:10px 0"><h3 style="color:#16713e;margin:4px 0 12px">\u{1F4CB} أرقام الفروع المُدخلة</h3>';
+      h+='<div style="overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background:#dcf2e4">';
+      h+='<th style="padding:6px;border:1px solid #b6e6c6">الفرع</th>';
+      for(var i=0;i<prods.length;i++){h+='<th style="padding:6px;border:1px solid #b6e6c6">'+prods[i].label+'</th>';}
+      h+='<th style="padding:6px;border:1px solid #b6e6c6">عدد التللير</th>';
+      h+='<th style="padding:6px;border:1px solid #b6e6c6">خدمة العملاء</th>';
+      h+='<th style="padding:6px;border:1px solid #b6e6c6">الكيوماتيك</th>';
+      h+='<th style="padding:6px;border:1px solid #b6e6c6">إيداع الشركات</th>';
+      h+='<th style="padding:6px;border:1px solid #b6e6c6">ودائع شركات</th>';
+      h+='<th style="padding:6px;border:1px solid #b6e6c6">التاريخ</th></tr></thead><tbody>';
+      for(var j=0;j<branches.length;j++){
+        var b=branches[j];if(!b)continue;var d=bt[b.id];
+        h+='<tr><td style="padding:6px;border:'+bd+';font-weight:bold">'+(b.name||'')+'</td>';
+        if(!d){h+='<td colspan="'+(prods.length+6)+'" style="padding:6px;border:'+bd+';color:#999">لا توجد أرقام مُدخلة</td></tr>';continue;}
+        var v=d.values||{};
+        for(var p=0;p<prods.length;p++){h+='<td style="padding:6px;border:'+bd+';text-align:center">'+(v[prods[p].key]||0)+'</td>';}
+        h+='<td style="padding:6px;border:'+bd+';text-align:center">'+(d.tellers||0)+'</td>';
+        h+='<td style="padding:6px;border:'+bd+';text-align:center">'+(d.cs||0)+'</td>';
+        h+='<td style="padding:6px;border:'+bd+';text-align:center">'+(d.qmatic||0)+'</td>';
+        h+='<td style="padding:6px;border:'+bd+';text-align:center">'+(d.corpDep||0)+'</td>';
+        h+='<td style="padding:6px;border:'+bd+';text-align:center">'+(d.corpSav||0)+'</td>';
+        h+='<td style="padding:6px;border:'+bd+';text-align:center">'+(d.date||'-')+'</td></tr>';
+      }
+      h+='</tbody></table></div></div>';
+      view.innerHTML=h;
+    }catch(e){}
+  };
+})();</script>
 </body>
 </html>
