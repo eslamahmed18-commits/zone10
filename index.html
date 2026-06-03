@@ -1425,5 +1425,46 @@ initCloud();
     };
   }
 })();</script>
+<script>(function(){
+  if(window.branchTotalsHTML && !window.__bt4Wrapped){
+    window.__bt4Wrapped=true;
+    var _bt=window.branchTotalsHTML;
+    window.branchTotalsHTML=function(){
+      var h=_bt.apply(this,arguments);
+      var bid=(typeof session!=='undefined'&&session)?session.branchId:null;
+      var bt=(typeof state!=='undefined'&&state.branchTotals&&bid)?state.branchTotals[bid]:null;
+      var cd=(bt&&bt.corpDep!=null)?bt.corpDep:'';
+      var cv=(bt&&bt.corpSav!=null)?bt.corpSav:'';
+      var extra='<div class="card"><h3>🏢 إيداع وودائع الشركات</h3>'
+        +'<div class="field"><label>إيداع الشركات</label><input class="z-input" id="zt_corp_dep" type="number" inputmode="numeric" value="'+cd+'"></div>'
+        +'<div class="field"><label>ودائع شركات</label><input class="z-input" id="zt_corp_sav" type="number" inputmode="numeric" value="'+cv+'"></div>'
+        +'</div>';
+      return extra+h;
+    };
+  }
+  if(window.saveBranchTotals && !window.__sbt4Wrapped){
+    window.__sbt4Wrapped=true;
+    var _save=window.saveBranchTotals;
+    window.saveBranchTotals=function(){
+      function num(id){var e=document.getElementById(id);return e?(parseFloat(e.value)||0):0;}
+      var cd=num('zt_corp_dep'), cv=num('zt_corp_sav');
+      var de=document.getElementById('zt_date');
+      var date=(de&&de.value)?de.value:((typeof todayStr==='function')?todayStr():new Date().toISOString().slice(0,10));
+      _save.apply(this,arguments);
+      try{
+        var bid=session.branchId;
+        if(state.branchTotals&&state.branchTotals[bid]){
+          state.branchTotals[bid].corpDep=cd;
+          state.branchTotals[bid].corpSav=cv;
+          if(state.branchTotals[bid].history&&state.branchTotals[bid].history[date]){
+            state.branchTotals[bid].history[date].corpDep=cd;
+            state.branchTotals[bid].history[date].corpSav=cv;
+          }
+          commit(false);
+        }
+      }catch(e){}
+    };
+  }
+})();</script>
 </body>
 </html>
