@@ -1245,12 +1245,12 @@ initCloud();
     var bt=(state.branchTotals||{})[bid]||{values:{}};
     var rows=PRODUCTS.map(function(p){ var v=(bt.values&&bt.values[p.key]!=null)?bt.values[p.key]:''; return '<div style="margin-bottom:10px"><label>'+p.label+' <span class="muted">('+(p.unit||'')+')</span></label><input class="z-input" id="zt_'+p.key+'" type="number" inputmode="numeric" value="'+v+'"></div>'; }).join('');
     var upd= bt.updatedAt? '<div class="muted" style="margin-top:6px">آخر تحديث: '+new Date(bt.updatedAt).toLocaleString('ar-EG')+'</div>':'';
-    return '<div class="card z-frame"><h3 style="margin:0 0 4px">🧮 أرقام الفرع الإجمالية — '+(br?br.name:'')+'</h3><div class="muted">أدخل الإجمالي المحقق للفرع لكل منتج. تُستخدم في الترتيب والمقارنة.</div></div><div class="card">'+rows+'<div class="z-row" style="margin-top:6px"><button class="z-btn" onclick="saveBranchTotals()">💾 حفظ أرقام الفرع</button></div>'+upd+'</div>';
+    return '<div class="card z-frame"><h3 style="margin:0 0 4px">🧮 أرقام الفرع الإجمالية — '+(br?br.name:'')+'</h3><div class="muted">أدخل الإجمالي المحقق للفرع لكل منتج. تُستخدم في الترتيب والمقارنة.</div></div><div class="card">'+rows+'<div style="margin-bottom:10px"><label>عدد الكيوماتيك</label><input class="z-input" id="zt_qmatic" type="number" inputmode="numeric" value="'+(bt.qmatic!=null?bt.qmatic:'')+'"></div><div style="margin-bottom:10px"><label>عدد التللير</label><input class="z-input" id="zt_tellers" type="number" inputmode="numeric" value="'+(bt.tellers!=null?bt.tellers:'')+'"></div><div style="margin-bottom:10px"><label>عدد خدمة العملاء</label><input class="z-input" id="zt_cs" type="number" inputmode="numeric" value="'+(bt.cs!=null?bt.cs:'')+'"></div><div class="z-row" style="margin-top:6px"><button class="z-btn" onclick="saveBranchTotals()">💾 حفظ أرقام الفرع</button></div>'+upd+'</div>';
   };
   window.saveBranchTotals=function(){
     var bid=session.branchId; state.branchTotals=state.branchTotals||{}; var vals={};
     PRODUCTS.forEach(function(p){ var el=document.getElementById('zt_'+p.key); var n=el?parseFloat(el.value):NaN; vals[p.key]=isNaN(n)?0:n; });
-    state.branchTotals[bid]={values:vals,updatedAt:new Date().toISOString(),by:(typeof deviceId==='function'?deviceId():'')};
+    state.branchTotals[bid]={values:vals,qmatic:(function(e){return e?parseFloat(e.value)||0:0;})(document.getElementById('zt_qmatic')),tellers:(function(e){return e?parseFloat(e.value)||0:0;})(document.getElementById('zt_tellers')),cs:(function(e){return e?parseFloat(e.value)||0:0;})(document.getElementById('zt_cs')),updatedAt:new Date().toISOString(),by:(typeof deviceId==='function'?deviceId():'')};
     commit(false); alert('تم حفظ أرقام الفرع ✅');
   };
   window.compareHTML=function(){
