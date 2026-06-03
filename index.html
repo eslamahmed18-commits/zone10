@@ -1435,11 +1435,11 @@ initCloud();
       var bt=(typeof state!=='undefined'&&state.branchTotals&&bid)?state.branchTotals[bid]:null;
       var cd=(bt&&bt.corpDep!=null)?bt.corpDep:'';
       var cv=(bt&&bt.corpSav!=null)?bt.corpSav:'';
-      var extra='<div class="card"><h3>🏢 إيداع وودائع الشركات</h3>'
+      var extra='<div style="margin-top:4px"><h4 style="margin:8px 0;color:#16713e">🏢 إيداع وودائع الشركات</h4>'
         +'<div class="field"><label>إيداع الشركات</label><input class="z-input" id="zt_corp_dep" type="number" inputmode="numeric" value="'+cd+'"></div>'
         +'<div class="field"><label>ودائع شركات</label><input class="z-input" id="zt_corp_sav" type="number" inputmode="numeric" value="'+cv+'"></div>'
         +'</div>';
-      return extra+h;
+      var mk='<div class="z-row" style="margin-top:6px">';var bi=h.indexOf(mk);return bi>-1?(h.slice(0,bi)+extra+h.slice(bi)):(h+extra);
     };
   }
   if(window.saveBranchTotals && !window.__sbt4Wrapped){
